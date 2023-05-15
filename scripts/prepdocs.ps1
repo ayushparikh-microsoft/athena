@@ -4,11 +4,11 @@ Write-Host ""
 
 $output = azd env get-values
 
-foreach ($line in $output) {
-  $name, $value = $line.Split("=")
-  $value = $value -replace '^\"|\"$'
-  [Environment]::SetEnvironmentVariable($name, $value)
-}
+#foreach ($line in $output) {
+#  $name, $value = $line.Split("=")
+#  $value = $value -replace '^\"|\"$'
+#  [Environment]::SetEnvironmentVariable($name, $value)
+#}
 
 Write-Host "Environment variables set."
 
@@ -21,7 +21,7 @@ if (-not $pythonCmd) {
 Write-Host 'Creating python virtual environment "scripts/.venv"'
 Start-Process -FilePath ($pythonCmd).Source -ArgumentList "-m venv ./scripts/.venv" -Wait -NoNewWindow
 
-$venvPythonPath = "./scripts/.venv/scripts/python.exe"
+$venvPythonPath = "./scripts/.venv/Scripts/python.exe"
 if (Test-Path -Path "/usr") {
   # fallback to Linux venv path
   $venvPythonPath = "./scripts/.venv/bin/python"

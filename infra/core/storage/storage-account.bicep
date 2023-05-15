@@ -32,6 +32,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2022-05-01' = {
     allowSharedKeyAccess: allowSharedKeyAccess
     defaultToOAuthAuthentication: defaultToOAuthAuthentication
     dnsEndpointType: dnsEndpointType
+    supportsHttpsTrafficOnly: true
     minimumTlsVersion: minimumTlsVersion
     networkAcls: {
       bypass: 'AzureServices'

@@ -5,6 +5,7 @@ import logging
 import openai
 from flask import Flask, request, jsonify
 from azure.identity import DefaultAzureCredential
+from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
 from approaches.retrievethenread import RetrieveThenReadApproach
 from approaches.readretrieveread import ReadRetrieveReadApproach
@@ -37,18 +38,21 @@ openai.api_base = f"https://{AZURE_OPENAI_SERVICE}.openai.azure.com"
 openai.api_version = "2022-12-01"
 
 # Comment these two lines out if using keys, set your API key in the OPENAI_API_KEY environment variable instead
-openai.api_type = "azure_ad"
-openai_token = azure_credential.get_token("https://cognitiveservices.azure.com/.default")
-openai.api_key = openai_token.token
+#openai.api_type = "azure_ad"
+#openai_token = azure_credential.get_token("https://cognitiveservices.azure.com/.default")
+openai.api_key = os.environ.get("AZURE_OPENAI_API_KEY") # openai_token.token
+
+search_creds = AzureKeyCredential(os.environ.get("AZURE_SEARCH_SERVICE_KEY"))
+blob_creds = os.environ.get("AZURE_STORAGE_ACCOUNT_KEY")
 
 # Set up clients for Cognitive Search and Storage
 search_client = SearchClient(
     endpoint=f"https://{AZURE_SEARCH_SERVICE}.search.windows.net",
     index_name=AZURE_SEARCH_INDEX,
-    credential=azure_credential)
+    credential=search_creds)
 blob_client = BlobServiceClient(
     account_url=f"https://{AZURE_STORAGE_ACCOUNT}.blob.core.windows.net", 
-    credential=azure_credential)
+    credential=blob_creds)
 blob_container = blob_client.get_container_client(AZURE_STORAGE_CONTAINER)
 
 # Various approaches to integrate GPT and external knowledge, most applications will use a single one of these patterns
@@ -83,7 +87,7 @@ def content_file(path):
     
 @app.route("/ask", methods=["POST"])
 def ask():
-    ensure_openai_token()
+    #ensure_openai_token()
     approach = request.json["approach"]
     try:
         impl = ask_approaches.get(approach)
@@ -97,7 +101,7 @@ def ask():
     
 @app.route("/chat", methods=["POST"])
 def chat():
-    ensure_openai_token()
+    #ensure_openai_token()
     approach = request.json["approach"]
     try:
         impl = chat_approaches.get(approach)

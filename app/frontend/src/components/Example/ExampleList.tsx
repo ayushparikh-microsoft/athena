@@ -9,8 +9,8 @@ export type ExampleModel = {
 
 const EXAMPLES: ExampleModel[] = [
     {
-        text: "How do I handle an Attendee high CPU alert?",
-        value: "How do I handle an Attendee high CPU alert?"
+        text: "What are special clouds like Gallatin?",
+        value: "What are special clouds like Gallatin?"
     },
     { text: "How can I identify a split meeting issue?", value: "How can I identify a split meeting issue?" },
     {

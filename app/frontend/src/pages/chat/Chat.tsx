@@ -142,7 +142,8 @@ const Chat = () => {
                         </div>
                         */
                         <div className={styles.chatEmptyState}>
-                            <h1 className={styles.chatEmptyStateTitle}>Start chatting!</h1>
+                            <h1 className={styles.chatEmptyStateTitle}>Welcome!</h1>
+                            <h2 className={styles.chatEmptyStateSubtitle}>Start chatting or try an example.</h2>
                             <ExampleList onExampleClicked={onExampleClicked} />
                         </div>
                     ) : (

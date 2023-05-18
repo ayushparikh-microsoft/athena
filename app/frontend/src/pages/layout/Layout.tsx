@@ -1,6 +1,9 @@
 import { Outlet, NavLink, Link } from "react-router-dom";
 
+import athena from "../../assets/g-athena.png";
 import styles from "./Layout.module.css";
+
+// <img src={athena} alt="Athena logo" aria-label="Logo for athena" width="40px" height="20px" className={styles.athenaLogo} />
 
 const Layout = () => {
     return (

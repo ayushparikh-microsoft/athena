@@ -9,11 +9,14 @@ export type ExampleModel = {
 
 const EXAMPLES: ExampleModel[] = [
     {
-        text: "What is operator connect mobile?",
-        value: "What is operator connect mobile?"
+        text: "How do I handle an Attendee high CPU alert?",
+        value: "How do I handle an Attendee high CPU alert?"
     },
-    { text: "How does a customer get a telephone number?", value: "How does a customer get a telephone number?" },
-    { text: "How do I help a customer set up a call queue?", value: "How do I help a customer set up a call queue?" }
+    { text: "How can I identify a split meeting issue?", value: "How can I identify a split meeting issue?" },
+    {
+        text: "How do I figure out who removed the CallRecorder bot from CosmosDB?",
+        value: "How do I figure out who removed the CallRecorder bot from CosmosDB?"
+    }
 ];
 
 interface Props {

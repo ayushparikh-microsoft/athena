@@ -1,15 +1,16 @@
 import openai
+import re
 from azure.search.documents import SearchClient
 from azure.search.documents.models import QueryType
 from approaches.approach import Approach
-from text import nonewlines
+from text import nonewlines, linkify
 
 # Simple retrieve-then-read implementation, using the Cognitive Search and OpenAI APIs directly. It first retrieves
 # top documents from search, then constructs a prompt with them, and then uses OpenAI to generate an completion 
 # (answer) with that prompt.
 class ChatReadRetrieveReadApproach(Approach):
     prompt_prefix = """<|im_start|>system
-Assistant helps the company engineers handle customer incidents and outages. Be brief in your answers.
+Assistant helps Contoso Inc. engineers handle customer incidents and outages and answers their questions about documentation. Be brief in your answers.
 Answer ONLY with the facts listed in the list of sources below. If there isn't enough information below, say you don't know. Do not generate answers that don't use the sources below. If asking a clarifying question to the user would help, ask the question.
 For tabular information return it as an html table. Do not return markdown format.
 Each source has a name followed by colon and the actual information, always include the source name for each fact you use in the response. Use square brakets to reference the source, e.g. [info1.txt]. Don't combine sources, list each source separately, e.g. [info1.txt][info2.pdf].
@@ -21,12 +22,12 @@ Sources:
 {chat_history}
 """
 
-    follow_up_questions_prompt_content = """Generate three very brief follow-up questions that the user would likely ask next about product documentation. 
+    follow_up_questions_prompt_content = """Generate three very brief follow-up questions that the user would likely ask next about how to solve an incident or about documentation. 
     Use double angle brackets to reference the questions, e.g. <<How can I help a customer create a phone number?>>.
     Try not to repeat questions that have already been asked.
     Only generate questions and do not generate any text before or after the questions, such as 'Next Questions'"""
 
-    query_prompt_template = """Below is a history of the conversation so far, and a new question asked by the user that needs to be answered by searching in a knowledge base about product documentation and engineering guides.
+    query_prompt_template = """Below is a history of the conversation so far, and a new question asked by the user that needs to be answered by searching in a knowledge base with documentation and engineering guides.
     Generate a search query based on the conversation and the new question. 
     Do not include cited source filenames and document names e.g info.txt or doc.pdf in the search query terms.
     Do not include any text inside [] or <<>> in the search query terms.
@@ -60,7 +61,7 @@ Search query:
             engine=self.gpt_deployment, 
             prompt=prompt, 
             temperature=0.0, 
-            max_tokens=32, 
+            max_tokens=32,
             n=1, 
             stop=["\n"])
         q = completion.choices[0].text
@@ -103,7 +104,7 @@ Search query:
             n=1, 
             stop=["<|im_end|>", "<|im_start|>"])
 
-        return {"data_points": results, "answer": completion.choices[0].text, "thoughts": f"Searched for:<br>{q}<br><br>Prompt:<br>" + prompt.replace('\n', '<br>')}
+        return {"data_points": results, "answer": linkify(completion.choices[0].text), "thoughts": f"Searched for:<br>{q}<br><br>Prompt:<br>" + prompt.replace('\n', '<br>')}
     
     def get_chat_history_as_text(self, history, include_last_turn=True, approx_max_tokens=1000) -> str:
         history_text = ""

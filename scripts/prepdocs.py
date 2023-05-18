@@ -1,10 +1,12 @@
 import os
 import argparse
+import textract
 import glob
 import html
 import io
 import re
 import time
+import pandas as pd
 from pypdf import PdfReader, PdfWriter
 from azure.identity import AzureDeveloperCliCredential
 from azure.core.credentials import AzureKeyCredential
@@ -22,7 +24,7 @@ parser = argparse.ArgumentParser(
     description="Prepare documents by extracting content from PDFs, splitting content into sections, uploading to blob storage, and indexing in a search index.",
     epilog="Example: prepdocs.py '..\data\*' --storageaccount myaccount --container mycontainer --searchservice mysearch --index myindex -v"
     )
-parser.add_argument("files", help="Files to be processed")
+parser.add_argument("files", help="Files to be processed. Can either be a directory or, preferably, an xlsx with 3 columns: file (a path), category (the type of file), and weblink (if it exists).")
 parser.add_argument("--category", help="Value for the category field in the search index for all sections indexed in this run")
 parser.add_argument("--skipblobs", action="store_true", help="Skip uploading individual pages to Azure Blob Storage")
 parser.add_argument("--storageaccount", help="Azure Blob Storage account name")
@@ -44,6 +46,7 @@ args = parser.parse_args()
 azd_credential = AzureDeveloperCliCredential() if args.tenantid == None else AzureDeveloperCliCredential(tenant_id=args.tenantid)#, process_timeout=60)
 default_creds = azd_credential if args.searchkey == None or args.storagekey == None else None
 search_creds = default_creds if args.searchkey == None else AzureKeyCredential(args.searchkey)
+
 if not args.skipblobs:
     storage_creds = default_creds if args.storagekey == None else args.storagekey
 if not args.localpdfparser:
@@ -115,7 +118,14 @@ def table_to_html(table):
 def get_document_text(filename):
     offset = 0
     page_map = []
-    if args.localpdfparser:
+    filetype = filename.split(".")[-1].lower()
+    form_recognizer_client = DocumentAnalysisClient(endpoint=f"https://{args.formrecognizerservice}.cognitiveservices.azure.com/", credential=formrecognizer_creds, headers={"x-ms-useragent": "azure-search-chat-demo/1.0.0"})
+
+    if filetype == "docx":
+        # docx2text.process(filename, f"/{filename}_images") 
+        page_text = textract.process(filename)
+        page_map.append((0, 0, page_text))
+    elif filetype == "pdf" and args.localpdfparser:
         reader = PdfReader(filename)
         pages = reader.pages
         for page_num, p in enumerate(pages):
@@ -123,10 +133,14 @@ def get_document_text(filename):
             page_map.append((page_num, offset, page_text))
             offset += len(page_text)
     else:
-        if args.verbose: print(f"Extracting text from '{filename}' using Azure Form Recognizer")
-        form_recognizer_client = DocumentAnalysisClient(endpoint=f"https://{args.formrecognizerservice}.cognitiveservices.azure.com/", credential=formrecognizer_creds, headers={"x-ms-useragent": "azure-search-chat-demo/1.0.0"})
-        with open(filename, "rb") as f:
-            poller = form_recognizer_client.begin_analyze_document("prebuilt-layout", document = f)
+        if filetype == "pdf":
+            if args.verbose: print(f"Extracting text from '{filename}' using Azure Form Recognizer Layout Model")
+            with open(filename, "rb") as f:
+                poller = form_recognizer_client.begin_analyze_document("prebuilt-layout", document = f)
+        else:
+            if args.verbose: print(f"Extracting text from '{filename}' using Azure Form Recognizer Read Model")
+            with open(filename, "rb") as f:
+                poller = form_recognizer_client.begin_analyze_document("prebuilt-read", document = f)
         form_recognizer_results = poller.result()
 
         for page_num, page in enumerate(form_recognizer_results.pages):
@@ -156,7 +170,7 @@ def get_document_text(filename):
 
             page_text += " "
             page_map.append((page_num, offset, page_text))
-            offset += len(page_text)
+            offset += len(page_text)        
 
     return page_map
 
@@ -220,13 +234,14 @@ def split_text(page_map):
     if start + SECTION_OVERLAP < end:
         yield (all_text[start:end], find_page(start))
 
-def create_sections(filename, page_map):
+def create_sections(filename, page_map, weblink=None):
     for i, (section, pagenum) in enumerate(split_text(page_map)):
         yield {
             "id": re.sub("[^0-9a-zA-Z_-]","_",f"{filename}-{i}"),
             "content": section,
             "category": args.category,
             "sourcepage": blob_name_from_file_page(filename, pagenum),
+            "weblink": weblink,
             "sourcefile": filename
         }
 
@@ -235,12 +250,14 @@ def create_search_index():
     index_client = SearchIndexClient(endpoint=f"https://{args.searchservice}.search.windows.net/",
                                      credential=search_creds)
     if args.index not in index_client.list_index_names():
+        # Edm.String = Entity Data Model string
         index = SearchIndex(
             name=args.index,
             fields=[
                 SimpleField(name="id", type="Edm.String", key=True),
                 SearchableField(name="content", type="Edm.String", analyzer_name="en.microsoft"),
                 SimpleField(name="category", type="Edm.String", filterable=True, facetable=True),
+                SimpleField(name="weblink", type="Edm.String", filterable=True, facetable=True),
                 SimpleField(name="sourcepage", type="Edm.String", filterable=True, facetable=True),
                 SimpleField(name="sourcefile", type="Edm.String", filterable=True, facetable=True)
             ],
@@ -298,18 +315,26 @@ else:
     if not args.remove:
         create_search_index()
     
-    print(f"Processing files...")
-    for filename in glob.glob(args.files):
-        if args.verbose: print(f"Processing '{filename}'")
-        if args.remove:
-            remove_blobs(filename)
-            remove_from_index(filename)
-        elif args.removeall:
-            remove_blobs(None)
-            remove_from_index(None)
-        else:
-            if not args.skipblobs:
-                upload_blobs(filename)
-            page_map = get_document_text(filename)
-            sections = create_sections(os.path.basename(filename), page_map)
-            index_sections(os.path.basename(filename), sections)
+    filetype = args.files.split('.')[-1]
+
+    if filetype == "xlsx":
+        files_df = pd.read_excel(args.file)
+    else:
+        files = glob.glob(args.files)
+        print(f"Processing files...")
+        for filename in files:
+            if os.path.isdir(filename):
+                continue
+            if args.verbose: print(f"Processing '{filename}'")
+            if args.remove:
+                remove_blobs(filename)
+                remove_from_index(filename)
+            elif args.removeall:
+                remove_blobs(None)
+                remove_from_index(None)
+            else:
+                if not args.skipblobs:
+                    upload_blobs(filename)
+                page_map = get_document_text(filename)
+                sections = create_sections(os.path.basename(filename), page_map)
+                index_sections(os.path.basename(filename), sections)

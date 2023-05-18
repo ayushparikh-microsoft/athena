@@ -8,7 +8,7 @@ from langchain.callbacks.base import CallbackManager
 from langchain.agents import Tool, AgentExecutor
 from langchain.agents.react.base import ReActDocstoreAgent
 from langchainadapters import HtmlCallbackHandler
-from text import nonewlines
+from text import nonewlines, linkify
 from typing import List
 
 class ReadDecomposeAsk(Approach):
@@ -86,7 +86,7 @@ class ReadDecomposeAsk(Approach):
         # Fix up references to they look like what the frontend expects ([] instead of ()), need a better citation format since parentheses are so common
         result = result.replace("(", "[").replace(")", "]")
 
-        return {"data_points": self.results or [], "answer": result, "thoughts": cb_handler.get_and_reset_log()}
+        return {"data_points": self.results or [], "answer": linkify(result), "thoughts": cb_handler.get_and_reset_log()}
     
 class ReAct(ReActDocstoreAgent):
     @classmethod

@@ -26,6 +26,8 @@
 }
 
 .headerLogo {
+    display: flex;
+    align-items: center;
     height: 40px;
 }
 
@@ -73,6 +75,6 @@
     font-weight: 600;
 }
 
-.githubLogo {
-    height: 20px;
+.athenaLogo {
+    height: 40px;
 }

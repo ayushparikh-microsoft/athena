@@ -1,7 +1,7 @@
 import glob, os
 
 # Change this to the path to your sync_pstn_tni folder
-paths = ['./sync_pstn_tni/', './sync_calling_concore-docs/']
+paths = ['./sync_calling_concore-docs/Content/TSGs/'] #['./sync_pstn_tni/', './sync_calling_concore-docs/']
 
 # Change this to the path to your PDFs folder
 output_path = './PDFs'

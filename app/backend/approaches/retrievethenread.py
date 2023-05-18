@@ -2,7 +2,7 @@ import openai
 from approaches.approach import Approach
 from azure.search.documents import SearchClient
 from azure.search.documents.models import QueryType
-from text import nonewlines
+from text import nonewlines, linkify
 
 # Simple retrieve-then-read implementation, using the Cognitive Search and OpenAI APIs directly. It first retrieves
 # top documents from search, then constructs a prompt with them, and then uses OpenAI to generate an completion 
@@ -10,7 +10,7 @@ from text import nonewlines
 class RetrieveThenReadApproach(Approach):
 
     template = \
-"You are an intelligent assistant helping Contoso Inc engineers with questions about documentation and handling customer incidents " + \
+"You are an intelligent assistant helping engineers with questions about documentation and handling customer incidents " + \
 "Use 'you' to refer to the individual asking the questions even if they ask with 'I'. " + \
 "Answer the following question using only the data provided in the sources below. " + \
 "For tabular information return it as an html table. Do not return markdown format. "  + \
@@ -77,4 +77,4 @@ Answer:
             n=1, 
             stop=["\n"])
 
-        return {"data_points": results, "answer": completion.choices[0].text, "thoughts": f"Question:<br>{q}<br><br>Prompt:<br>" + prompt.replace('\n', '<br>')}
+        return {"data_points": results, "answer": linkify(completion.choices[0].text), "thoughts": f"Question:<br>{q}<br><br>Prompt:<br>" + prompt.replace('\n', '<br>')}

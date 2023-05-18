@@ -8,7 +8,7 @@ from langchain.chains import LLMChain
 from langchain.agents import Tool, ZeroShotAgent, AgentExecutor
 from langchain.llms.openai import AzureOpenAI
 from langchainadapters import HtmlCallbackHandler
-from text import nonewlines
+from text import nonewlines, linkify
 from lookuptool import CsvLookupTool
 
 # Attempt to answer questions by iteratively evaluating the question to see what information is missing, and once all information
@@ -19,7 +19,7 @@ from lookuptool import CsvLookupTool
 class ReadRetrieveReadApproach(Approach):
 
     template_prefix = \
-"You are an intelligent assistant helping Contoso Inc employees with their healthcare plan questions and employee handbook questions. " \
+"You are an intelligent assistant helping engineers with questions about documentation and handling customer incidents. " \
 "Answer the question using only the data provided in the information sources below. " \
 "For tabular information return it as an html table. Do not return markdown format. " \
 "Each source has a name followed by colon and the actual data, quote the source name for each piece of data you use in the response. " \
@@ -98,7 +98,7 @@ Thought: {agent_scratchpad}"""
         # Remove references to tool names that might be confused with a citation
         result = result.replace("[CognitiveSearch]", "").replace("[Employee]", "")
 
-        return {"data_points": self.results or [], "answer": result, "thoughts": cb_handler.get_and_reset_log()}
+        return {"data_points": self.results or [], "answer": linkify(result), "thoughts": cb_handler.get_and_reset_log()}
 
 class EmployeeInfoTool(CsvLookupTool):
     employee_name: str = ""

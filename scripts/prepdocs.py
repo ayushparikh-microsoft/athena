@@ -121,10 +121,10 @@ def get_document_text(filename):
     filetype = filename.split(".")[-1].lower()
     form_recognizer_client = DocumentAnalysisClient(endpoint=f"https://{args.formrecognizerservice}.cognitiveservices.azure.com/", credential=formrecognizer_creds, headers={"x-ms-useragent": "azure-search-chat-demo/1.0.0"})
 
-    if filetype == "docx":
+    if filetype == "docx" or filetype == "txt":
         # docx2text.process(filename, f"/{filename}_images") 
         page_text = textract.process(filename)
-        page_map.append((0, 0, page_text))
+        page_map.append((0, 0, str(page_text)))
     elif filetype == "pdf" and args.localpdfparser:
         reader = PdfReader(filename)
         pages = reader.pages

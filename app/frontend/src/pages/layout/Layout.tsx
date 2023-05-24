@@ -25,6 +25,11 @@ const Layout = () => {
                                     Ask a question
                                 </NavLink>
                             </li>
+                            <li className={styles.headerNavLeftMargin}>
+                                <NavLink to="/feedback" className={({ isActive }) => (isActive ? styles.headerNavPageLinkActive : styles.headerNavPageLink)}>
+                                    Feedback
+                                </NavLink>
+                            </li>
                         </ul>
                     </nav>
                     <h4 className={styles.headerRightText}>Chat Bot for OCEs</h4>

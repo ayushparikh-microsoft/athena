@@ -62,6 +62,15 @@ def blob_name_from_file_page(filename, page = 0):
     else:
         return os.path.basename(filename)
 
+def category_from_filename(filename):
+    lowercase_filename = filename.lower()
+    if "tsg" in lowercase_filename:
+        return "TSG"
+    elif "onboarding" in lowercase_filename:
+        return "Onboarding Doc"
+    else:
+        return "Feature Doc"
+
 def upload_blobs(filename):
     blob_service = BlobServiceClient(account_url=f"https://{args.storageaccount}.blob.core.windows.net", credential=storage_creds)
     blob_container = blob_service.get_container_client(args.container)
@@ -239,7 +248,7 @@ def create_sections(filename, page_map, weblink=None):
         yield {
             "id": re.sub("[^0-9a-zA-Z_-]","_",f"{filename}-{i}"),
             "content": section,
-            "category": args.category,
+            "category": category_from_filename(filename),
             "sourcepage": blob_name_from_file_page(filename, pagenum),
             "weblink": weblink,
             "sourcefile": filename

@@ -39,3 +39,15 @@ export type ChatRequest = {
     approach: Approaches;
     overrides?: AskRequestOverrides;
 };
+
+export type FeedbackRequest = {
+    name: string;
+    link: string;
+    documenttype: string;
+    service: string;
+    generalfeedback: string;
+};
+
+export type FeedbackResponse = {
+    error?: string;
+};

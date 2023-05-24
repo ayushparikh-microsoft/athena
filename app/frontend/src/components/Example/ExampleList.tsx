@@ -14,8 +14,8 @@ const EXAMPLES: ExampleModel[] = [
     },
     { text: "How can I identify a split meeting issue?", value: "How can I identify a split meeting issue?" },
     {
-        text: "How do I figure out who removed the CallRecorder bot from CosmosDB?",
-        value: "How do I figure out who removed the CallRecorder bot from CosmosDB?"
+        text: "What are the options for Microsoft calling plans?",
+        value: "What are the options for Microsoft calling plans?"
     }
 ];
 

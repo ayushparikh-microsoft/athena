@@ -12,6 +12,8 @@ from approaches.readretrieveread import ReadRetrieveReadApproach
 from approaches.readdecomposeask import ReadDecomposeAsk
 from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
 from azure.storage.blob import BlobServiceClient
+from azure.data.tables import TableServiceClient
+from datetime import datetime
 
 # Replace these with your own values, either in environment variables or directly here
 AZURE_STORAGE_ACCOUNT = os.environ.get("AZURE_STORAGE_ACCOUNT") or "mystorageaccount"
@@ -54,6 +56,7 @@ blob_client = BlobServiceClient(
     account_url=f"https://{AZURE_STORAGE_ACCOUNT}.blob.core.windows.net", 
     credential=blob_creds)
 blob_container = blob_client.get_container_client(AZURE_STORAGE_CONTAINER)
+table_service = TableServiceClient.from_connection_string(conn_str="DefaultEndpointsProtocol=https;AccountName=stq7hlen5ik5u5s;AccountKey=DjJjUikZc+A/BLFK9HntkP5BaZbk1iFc+GFy+csrqt6zrb7K5WV4549c0QSTEROKjn9Z9YzUzWKT+AStw+J4Fg==;EndpointSuffix=core.windows.net")
 
 # Various approaches to integrate GPT and external knowledge, most applications will use a single one of these patterns
 # or some derivative, here we include several for exploration purposes
@@ -111,6 +114,32 @@ def chat():
         return jsonify(r)
     except Exception as e:
         logging.exception("Exception in /chat")
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/feedback", methods=["POST"])
+def feedback():
+    #ensure_openai_token()
+    name = request.json["name"]
+    link = request.json["link"]
+    doctype = request.json["documenttype"]
+    service = request.json["service"]
+    print(request.json)
+    print(str(datetime.now()))
+    #feedback = request.json["generalfeedback"]
+    try:
+        my_entity = {
+            u'PartitionKey': service,
+            u'RowKey': str(datetime.now()),
+            u'DocumentLink': link,
+            u'FileType': 'PDF',
+            u'DocumentType': doctype
+        }
+
+        table_client = table_service.get_table_client(table_name="Feedback")
+        entity = table_client.create_entity(entity=my_entity)
+        return jsonify({"message": "Success"}), 202
+    except Exception as e:
+        logging.exception("Exception in /feedback")
         return jsonify({"error": str(e)}), 500
 
 def ensure_openai_token():

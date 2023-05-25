@@ -5,6 +5,14 @@ import styles from "./Layout.module.css";
 
 // <img src={athena} alt="Athena logo" aria-label="Logo for athena" width="40px" height="20px" className={styles.athenaLogo} />
 
+/*
+<li className={styles.headerNavLeftMargin}>
+<NavLink to="/qa" className={({ isActive }) => (isActive ? styles.headerNavPageLinkActive : styles.headerNavPageLink)}>
+Ask a question
+</NavLink>
+</li>
+*/
+
 const Layout = () => {
     return (
         <div className={styles.layout}>
@@ -18,11 +26,6 @@ const Layout = () => {
                             <li>
                                 <NavLink to="/" className={({ isActive }) => (isActive ? styles.headerNavPageLinkActive : styles.headerNavPageLink)}>
                                     Chat
-                                </NavLink>
-                            </li>
-                            <li className={styles.headerNavLeftMargin}>
-                                <NavLink to="/qa" className={({ isActive }) => (isActive ? styles.headerNavPageLinkActive : styles.headerNavPageLink)}>
-                                    Ask a question
                                 </NavLink>
                             </li>
                             <li className={styles.headerNavLeftMargin}>

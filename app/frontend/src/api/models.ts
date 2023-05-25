@@ -42,8 +42,10 @@ export type ChatRequest = {
 
 export type FeedbackRequest = {
     name: string;
+    email: string;
     link: string;
     documenttype: string;
+    filetype: string;
     service: string;
     generalfeedback: string;
 };

@@ -13,13 +13,14 @@ import Feedback from "./pages/feedback/Feedback";
 
 initializeIcons();
 
+//<Route path="qa" element={<OneShot />} />
+
 export default function App() {
     return (
         <HashRouter>
             <Routes>
                 <Route path="/" element={<Layout />}>
                     <Route index element={<Chat />} />
-                    <Route path="qa" element={<OneShot />} />
                     <Route path="*" element={<NoPage />} />
                     <Route path="feedback" element={<Feedback />} />
                 </Route>

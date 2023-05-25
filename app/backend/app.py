@@ -119,21 +119,25 @@ def chat():
 
 @app.route("/feedback", methods=["POST"])
 def feedback():
-    #ensure_openai_token()
     name = request.json["name"]
+    email = request.json["email"]
     link = request.json["link"]
     doctype = request.json["documenttype"]
+    filetype = request.json["filetype"]
     service = request.json["service"]
-    print(request.json)
-    print(str(datetime.now()))
-    #feedback = request.json["generalfeedback"]
+    feedback = request.json["generalfeedback"]
+
     try:
         my_entity = {
             u'PartitionKey': service,
             u'RowKey': str(datetime.now()),
-            u'DocumentLink': link,
-            u'FileType': 'PDF',
-            u'DocumentType': doctype
+            u'Name': name,
+            u'Email': email,
+            u'Link': link,
+            u'DocumentType': doctype,
+            u'FileType': filetype,
+            u'Service': service,
+            u'Feedback': feedback
         }
 
         table_client = table_service.get_table_client(table_name="Feedback")

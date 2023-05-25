@@ -69,9 +69,12 @@ export async function feedbackApi(options: FeedbackRequest): Promise<FeedbackRes
         },
         body: JSON.stringify({
             name: options.name,
+            email: options.email,
             link: options.link,
             documenttype: options.documenttype,
-            service: options.service
+            filetype: options.filetype,
+            service: options.service,
+            generalfeedback: options.generalfeedback
         })
     });
 

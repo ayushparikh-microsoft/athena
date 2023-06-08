@@ -109,6 +109,8 @@ const FeedbackForm: React.FC<FeedbackFormProps> = () => {
                         <option value="Middle Tier">Middle Tier</option>
                         <option value="CFV">CFV</option>
                         <option value="ACS">ACS</option>
+                        <option value="Media Transport MDN">Media Transport MDN</option>
+                        <option value="Media Connectivity">Media Connectivity</option>
                     </Form.Select>
                 </Form.Group>
                 <br />

@@ -10,7 +10,7 @@ from text import nonewlines, linkify
 # (answer) with that prompt.
 class ChatReadRetrieveReadApproach(Approach):
     prompt_prefix = """<|im_start|>system
-Assistant helps Contoso Inc. engineers handle customer incidents and outages and answers their questions about documentation. Be brief in your answers.
+Assistant helps Microsoft engineers handle customer incidents and outages and answers their questions about documentation. Be brief in your answers.
 Answer ONLY with the facts listed in the list of sources below. If there isn't enough information below, say you don't know. Do not generate answers that don't use the sources below. If asking a clarifying question to the user would help, ask the question.
 For tabular information return it as an html table. Do not return markdown format.
 Each source has a name followed by colon and the actual information, always include the source name for each fact you use in the response. Use square brakets to reference the source, e.g. [info1.txt]. Don't combine sources, list each source separately, e.g. [info1.txt][info2.pdf].
@@ -52,8 +52,10 @@ Search query:
     def run(self, history: list[dict], overrides: dict) -> any:
         use_semantic_captions = True if overrides.get("semantic_captions") else False
         top = overrides.get("top") or 3
-        exclude_category = overrides.get("exclude_category") or None
-        filter = "category ne '{}'".format(exclude_category.replace("'", "''")) if exclude_category else None
+        
+        #exclude_category = overrides.get("exclude_category") or None
+        #filter = "category ne '{}'".format(exclude_category.replace("'", "''")) if exclude_category else None
+        #filter = "category eq 'Feature Doc'"
 
         # STEP 1: Generate an optimized keyword search query based on the chat history and the last question
         prompt = self.query_prompt_template.format(chat_history=self.get_chat_history_as_text(history, include_last_turn=False), question=history[-1]["user"])
@@ -69,7 +71,7 @@ Search query:
         # STEP 2: Retrieve relevant documents from the search index with the GPT optimized query
         if overrides.get("semantic_ranker"):
             r = self.search_client.search(q, 
-                                          filter=filter,
+                                          #filter=filter,
                                           query_type=QueryType.SEMANTIC, 
                                           query_language="en-us", 
                                           query_speller="lexicon", 
@@ -86,7 +88,7 @@ Search query:
 
         follow_up_questions_prompt = self.follow_up_questions_prompt_content if overrides.get("suggest_followup_questions") else ""
         
-        # Allow client to replace the entire prompt, or to inject into the exiting prompt using >>>
+        # Allow client to replace the entire prompt, or to inject into the existing prompt using >>>
         prompt_override = overrides.get("prompt_template")
         if prompt_override is None:
             prompt = self.prompt_prefix.format(injected_prompt="", sources=content, chat_history=self.get_chat_history_as_text(history), follow_up_questions_prompt=follow_up_questions_prompt)
@@ -103,7 +105,6 @@ Search query:
             max_tokens=1024, 
             n=1, 
             stop=["<|im_end|>", "<|im_start|>"])
-
         return {"data_points": results, "answer": linkify(completion.choices[0].text), "thoughts": f"Searched for:<br>{q}<br><br>Prompt:<br>" + prompt.replace('\n', '<br>')}
     
     def get_chat_history_as_text(self, history, include_last_turn=True, approx_max_tokens=1000) -> str:

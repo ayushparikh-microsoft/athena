@@ -229,6 +229,7 @@ const OneShot = () => {
                     defaultValue={retrieveCount.toString()}
                     onChange={onRetrieveCountChange}
                 />
+
                 <TextField className={styles.oneshotSettingsSeparator} label="Exclude category" onChange={onExcludeCategoryChanged} />
                 <Checkbox
                     className={styles.oneshotSettingsSeparator}

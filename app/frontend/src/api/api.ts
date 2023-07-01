@@ -1,4 +1,4 @@
-import { AskRequest, AskResponse, ChatRequest, FeedbackRequest, FeedbackResponse } from "./models";
+import { AskRequest, AskResponse, ChatRequest, FeedbackRequest, FeedbackResponse, SasTokenResponse } from "./models";
 
 export async function askApi(options: AskRequest): Promise<AskResponse> {
     const response = await fetch("/ask", {
@@ -57,7 +57,7 @@ export async function chatApi(options: ChatRequest): Promise<AskResponse> {
     if (response.status > 299 || !response.ok) {
         throw Error(parsedResponse.error || "Unknown error");
     }
-
+    console.log(parsedResponse);
     return parsedResponse;
 }
 
@@ -79,6 +79,22 @@ export async function feedbackApi(options: FeedbackRequest): Promise<FeedbackRes
     });
 
     const parsedResponse: FeedbackResponse = await response.json();
+    if (response.status > 299 || !response.ok) {
+        throw Error(parsedResponse.error || "Unknown error");
+    }
+
+    return parsedResponse;
+}
+
+export async function sasTokenApi(): Promise<SasTokenResponse> {
+    const response = await fetch("/generate_sas_token", {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json"
+        }
+    });
+
+    const parsedResponse: SasTokenResponse = await response.json();
     if (response.status > 299 || !response.ok) {
         throw Error(parsedResponse.error || "Unknown error");
     }

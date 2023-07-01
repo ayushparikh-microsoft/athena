@@ -53,3 +53,8 @@ export type FeedbackRequest = {
 export type FeedbackResponse = {
     error?: string;
 };
+
+export type SasTokenResponse = {
+    sas_token?: string;
+    error?: string;
+};

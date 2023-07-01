@@ -7,13 +7,17 @@ from flask import Flask, request, jsonify
 from azure.identity import DefaultAzureCredential
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
+
+'''
 from approaches.retrievethenread import RetrieveThenReadApproach
 from approaches.readretrieveread import ReadRetrieveReadApproach
 from approaches.readdecomposeask import ReadDecomposeAsk
+'''
+
 from approaches.chatreadretrieveread import ChatReadRetrieveReadApproach
-from azure.storage.blob import BlobServiceClient
+from azure.storage.blob import BlobSasPermissions, BlobServiceClient, generate_container_sas
 from azure.data.tables import TableServiceClient
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 # Replace these with your own values, either in environment variables or directly here
 AZURE_STORAGE_ACCOUNT = os.environ.get("AZURE_STORAGE_ACCOUNT") or "mystorageaccount"
@@ -61,11 +65,13 @@ table_service = TableServiceClient.from_connection_string(conn_str=AZURE_STORAGE
 
 # Various approaches to integrate GPT and external knowledge, most applications will use a single one of these patterns
 # or some derivative, here we include several for exploration purposes
+'''
 ask_approaches = {
     "rtr": RetrieveThenReadApproach(search_client, AZURE_OPENAI_GPT_DEPLOYMENT, KB_FIELDS_SOURCEPAGE, KB_FIELDS_CONTENT),
     "rrr": ReadRetrieveReadApproach(search_client, AZURE_OPENAI_GPT_DEPLOYMENT, KB_FIELDS_SOURCEPAGE, KB_FIELDS_CONTENT),
     "rda": ReadDecomposeAsk(search_client, AZURE_OPENAI_GPT_DEPLOYMENT, KB_FIELDS_SOURCEPAGE, KB_FIELDS_CONTENT)
 }
+'''
 
 chat_approaches = {
     "rrr": ChatReadRetrieveReadApproach(search_client, AZURE_OPENAI_CHATGPT_DEPLOYMENT, AZURE_OPENAI_GPT_DEPLOYMENT, KB_FIELDS_SOURCEPAGE, KB_FIELDS_CONTENT)
@@ -127,6 +133,9 @@ def feedback():
     service = request.json["service"]
     feedback = request.json["generalfeedback"]
 
+    if str(service) == "None":
+        service = None
+
     try:
         my_entity = {
             u'PartitionKey': service,
@@ -146,6 +155,36 @@ def feedback():
     except Exception as e:
         logging.exception("Exception in /feedback")
         return jsonify({"error": str(e)}), 500
+
+@app.route('/generate_sas_token', methods=['GET'])
+def generate_sas_token():
+    account_name = AZURE_STORAGE_ACCOUNT
+    account_key = blob_creds
+    upload_container_name = 'athena-upload'
+
+    blob_service_client = BlobServiceClient(account_url=f'https://{account_name}.blob.core.windows.net/', credential=account_key)
+
+    delegation_key_start_time = datetime.now(timezone.utc)
+    delegation_key_expiry_time = delegation_key_start_time + timedelta(days=1)
+
+    user_delegation_key = blob_service_client.get_user_delegation_key(
+        key_start_time=delegation_key_start_time,
+        key_expiry_time=delegation_key_expiry_time
+    )
+
+    # Set the expiry time for the SAS token (in this case, 1 hour from now)
+    expiry_time = datetime.utcnow() + timedelta(hours=1)
+
+    # Generate the SAS token
+    sas_token = generate_container_sas(account_name=account_name, 
+                                  container_name=upload_container_name, 
+                                  user_delegation_key=user_delegation_key, 
+                                  account_key=account_key, 
+                                  expiry=expiry_time, 
+                                  permission=BlobSasPermissions(read=True, create=True, write=True))
+
+    # Return the SAS token to the client
+    return {'sas_token': sas_token}
 
 def ensure_openai_token():
     global openai_token

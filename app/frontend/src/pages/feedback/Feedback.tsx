@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import { feedbackApi, FeedbackRequest } from "../../api";
+import { feedbackApi, FeedbackRequest, sasTokenApi } from "../../api";
 
 import styles from "./Feedback.module.css";
 
@@ -16,6 +16,9 @@ const FeedbackForm: React.FC<FeedbackFormProps> = () => {
     const [service, setService] = useState("Conversation");
     const [feedback, setFeedback] = useState("");
     const [error, setError] = useState<unknown>();
+
+    // current file to upload into container
+    const [fileSelected, setFileSelected] = useState<File | null>();
 
     const makeApiRequest = async (name: string, documentLink: string, documentType: string, service: string, feedback: string) => {
         error && setError(undefined);
@@ -41,6 +44,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = () => {
         event.preventDefault();
         try {
             makeApiRequest(name, documentLink, documentType, service, feedback);
+            //uploadBlob();
             setName("");
             setEmail("");
             setDocumentLink("");
@@ -48,11 +52,36 @@ const FeedbackForm: React.FC<FeedbackFormProps> = () => {
             setFileType("PDF");
             setService("Conversation");
             setFeedback("");
+            setFileSelected(null);
             alert("Thanks for the feedback!");
         } catch (e) {
             setError(e);
         }
     };
+
+    const onFileChange = (event: any) => {
+        // capture file into state
+        setFileSelected(event.target.files[0]);
+    };
+
+    /*
+    const uploadBlob = async () => {
+        var sasToken = (await sasTokenApi()).sas_token;
+        console.log(sasToken);
+        const fileInput = document.getElementById("fileInput");
+        //const file = fileInput?.files[0];
+        //const blob = new Blob([fileSelected], { type: fileSelected.type });
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", `https://stq7hlen5ik5u5s.blob.core.windows.net/athena-upload/`);
+        xhr.setRequestHeader("x-ms-blob-type", "BlockBlob");
+        //xhr.setRequestHeader("x-ms-blob-content-type", blob.type);
+        xhr.setRequestHeader("x-ms-date", "<current date time>");
+        xhr.setRequestHeader("x-ms-version", "2019-02-02");
+        xhr.setRequestHeader("Authorization", sasToken ?? "");
+        //xhr.send(blob);
+    };
+    */
 
     return (
         <div className={styles.formContainer}>
@@ -69,6 +98,11 @@ const FeedbackForm: React.FC<FeedbackFormProps> = () => {
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Email </Form.Label>
                     <Form.Control size="lg" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Enter email" />
+                </Form.Group>
+                <br />
+                <Form.Group>
+                    <Form.Label>Select a File </Form.Label>
+                    <Form.Control size="lg" type="file" onChange={onFileChange} required />
                 </Form.Group>
                 <br />
                 <Form.Group className="mb-3" controlId="formLink">
@@ -111,6 +145,8 @@ const FeedbackForm: React.FC<FeedbackFormProps> = () => {
                         <option value="ACS">ACS</option>
                         <option value="Media Transport MDN">Media Transport MDN</option>
                         <option value="Media Connectivity">Media Connectivity</option>
+                        <option value="Media Connectivity">PSTN Hub</option>
+                        <option value="Media Connectivity">None</option>
                     </Form.Select>
                 </Form.Group>
                 <br />

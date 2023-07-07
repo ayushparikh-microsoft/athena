@@ -164,26 +164,16 @@ def generate_sas_token():
 
     blob_service_client = BlobServiceClient(account_url=f'https://{account_name}.blob.core.windows.net/', credential=account_key)
 
-    delegation_key_start_time = datetime.now(timezone.utc)
-    delegation_key_expiry_time = delegation_key_start_time + timedelta(days=1)
-
-    user_delegation_key = blob_service_client.get_user_delegation_key(
-        key_start_time=delegation_key_start_time,
-        key_expiry_time=delegation_key_expiry_time
-    )
-
     # Set the expiry time for the SAS token (in this case, 1 hour from now)
     expiry_time = datetime.utcnow() + timedelta(hours=1)
 
     # Generate the SAS token
     sas_token = generate_container_sas(account_name=account_name, 
                                   container_name=upload_container_name, 
-                                  user_delegation_key=user_delegation_key, 
                                   account_key=account_key, 
                                   expiry=expiry_time, 
                                   permission=BlobSasPermissions(read=True, create=True, write=True))
-
-    # Return the SAS token to the client
+    
     return {'sas_token': sas_token}
 
 def ensure_openai_token():

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
-import { feedbackApi, FeedbackRequest, sasTokenApi } from "../../api";
+import { uploadFileToBlob, feedbackApi, FeedbackRequest, sasTokenApi } from "../../api";
+import { BlobServiceClient, ContainerClient } from "@azure/storage-blob";
 
 import styles from "./Feedback.module.css";
 
@@ -44,7 +45,7 @@ const FeedbackForm: React.FC<FeedbackFormProps> = () => {
         event.preventDefault();
         try {
             makeApiRequest(name, documentLink, documentType, service, feedback);
-            //uploadBlob();
+            uploadBlob(fileSelected!);
             setName("");
             setEmail("");
             setDocumentLink("");
@@ -64,24 +65,15 @@ const FeedbackForm: React.FC<FeedbackFormProps> = () => {
         setFileSelected(event.target.files[0]);
     };
 
-    /*
-    const uploadBlob = async () => {
+    const uploadBlob = async (fileSelected: File | null) => {
         var sasToken = (await sasTokenApi()).sas_token;
-        console.log(sasToken);
-        const fileInput = document.getElementById("fileInput");
-        //const file = fileInput?.files[0];
-        //const blob = new Blob([fileSelected], { type: fileSelected.type });
+        const uploadUrl = `https://stq7hlen5ik5u5s.blob.core.windows.net/?${sasToken}`;
 
-        const xhr = new XMLHttpRequest();
-        xhr.open("PUT", `https://stq7hlen5ik5u5s.blob.core.windows.net/athena-upload/`);
-        xhr.setRequestHeader("x-ms-blob-type", "BlockBlob");
-        //xhr.setRequestHeader("x-ms-blob-content-type", blob.type);
-        xhr.setRequestHeader("x-ms-date", "<current date time>");
-        xhr.setRequestHeader("x-ms-version", "2019-02-02");
-        xhr.setRequestHeader("Authorization", sasToken ?? "");
-        //xhr.send(blob);
+        const blobService = new BlobServiceClient(uploadUrl);
+        const containerClient: ContainerClient = blobService.getContainerClient("athena-upload");
+
+        await uploadFileToBlob(containerClient, fileSelected);
     };
-    */
 
     return (
         <div className={styles.formContainer}>

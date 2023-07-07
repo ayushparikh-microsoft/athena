@@ -1,4 +1,5 @@
 import { AskRequest, AskResponse, ChatRequest, FeedbackRequest, FeedbackResponse, SasTokenResponse } from "./models";
+import { BlobServiceClient, ContainerClient } from "@azure/storage-blob";
 
 export async function askApi(options: AskRequest): Promise<AskResponse> {
     const response = await fetch("/ask", {
@@ -104,4 +105,41 @@ export async function sasTokenApi(): Promise<SasTokenResponse> {
 
 export function getCitationFilePath(citation: string): string {
     return `/content/${citation}`;
+}
+
+// return list of blobs in container to display
+export async function getBlobsInContainer(containerClient: ContainerClient, storageAccountName: string, containerName: string, sasToken: string) {
+    const returnedBlobUrls = [];
+
+    // get list of blobs in container
+    // eslint-disable-next-line
+    for await (const blob of containerClient.listBlobsFlat()) {
+        console.log(`${blob.name}`);
+
+        const blobItem = {
+            url: `https://${storageAccountName}.blob.core.windows.net/${containerName}/${blob.name}?${sasToken}`,
+            name: blob.name
+        };
+
+        // if image is public, just construct URL
+        returnedBlobUrls.push(blobItem);
+    }
+
+    return returnedBlobUrls;
+}
+
+const createBlobInContainer = async (containerClient: ContainerClient, file: File) => {
+    // create blobClient for container
+    const blobClient = containerClient.getBlockBlobClient(file.name);
+    const options = { blobHTTPHeaders: { blobContentType: file.type, "Access-Control-Allow-Origin": "*" } };
+
+    // upload file
+    await blobClient.uploadData(file, options);
+};
+
+export async function uploadFileToBlob(containerClient: ContainerClient, file: File | null): Promise<void> {
+    if (!file) return;
+
+    // upload file
+    await createBlobInContainer(containerClient, file);
 }

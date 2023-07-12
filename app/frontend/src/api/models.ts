@@ -14,6 +14,8 @@ export type AskRequestOverrides = {
     promptTemplatePrefix?: string;
     promptTemplateSuffix?: string;
     suggestFollowupQuestions?: boolean;
+    documentTypeFilters?: string[];
+    teamFilters?: string[];
 };
 
 export type AskRequest = {

@@ -28,7 +28,6 @@ export const Answer = ({
     showFollowupQuestions
 }: Props) => {
     const parsedAnswer = useMemo(() => parseAnswerToHtml(answer.answer, onCitationClicked), [answer]);
-    console.log(parsedAnswer);
     const sanitizedAnswerHtml = DOMPurify.sanitize(parsedAnswer.answerHtml);
 
     return (

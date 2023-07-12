@@ -49,7 +49,9 @@ export async function chatApi(options: ChatRequest): Promise<AskResponse> {
                 prompt_template_prefix: options.overrides?.promptTemplatePrefix,
                 prompt_template_suffix: options.overrides?.promptTemplateSuffix,
                 exclude_category: options.overrides?.excludeCategory,
-                suggest_followup_questions: options.overrides?.suggestFollowupQuestions
+                suggest_followup_questions: options.overrides?.suggestFollowupQuestions,
+                document_filters: options.overrides?.documentTypeFilters,
+                team_filters: options.overrides?.teamFilters
             }
         })
     });
@@ -58,7 +60,7 @@ export async function chatApi(options: ChatRequest): Promise<AskResponse> {
     if (response.status > 299 || !response.ok) {
         throw Error(parsedResponse.error || "Unknown error");
     }
-    console.log(parsedResponse);
+    //console.log(parsedResponse);
     return parsedResponse;
 }
 

@@ -12,6 +12,38 @@ import { UserChatMessage } from "../../components/UserChatMessage";
 import { AnalysisPanel, AnalysisPanelTabs } from "../../components/AnalysisPanel";
 import { SettingsButton } from "../../components/SettingsButton";
 import { ClearChatButton } from "../../components/ClearChatButton";
+import { MultiSelect } from "react-multi-select-component";
+
+interface DocumentType {
+    label: string;
+    value: string;
+}
+
+const documentTypeOptions = [
+    { label: "TSG", value: "TSG" },
+    { label: "Onboarding Doc", value: "Onboarding Doc" },
+    { label: "Feature Doc", value: "Feature Doc" }
+];
+
+interface TeamOptionsType {
+    label: string;
+    value: string;
+}
+
+const teamOptions = [
+    { label: "Conversation", value: "Conversation" },
+    { label: "Teams Scheduler", value: "Teams Scheduler" },
+    { label: "Attendee", value: "Attendee" },
+    { label: "Call Controller", value: "Call Controller" },
+    { label: "Broker", value: "Broker" },
+    { label: "Composer", value: "Composer" },
+    { label: "Middle Tier", value: "Middle Tier" },
+    { label: "CFV", value: "CFV" },
+    { label: "ACS", value: "ACS" },
+    { label: "Media Transport MDN", value: "Media Transport MDN" },
+    { label: "Media Connectivity", value: "Media Connectivity" },
+    { label: "PSTN Hub", value: "PSTN Hub" }
+];
 
 const Chat = () => {
     const [isConfigPanelOpen, setIsConfigPanelOpen] = useState(false);
@@ -21,6 +53,8 @@ const Chat = () => {
     const [useSemanticCaptions, setUseSemanticCaptions] = useState<boolean>(false);
     const [excludeCategory, setExcludeCategory] = useState<string>("");
     const [useSuggestFollowupQuestions, setUseSuggestFollowupQuestions] = useState<boolean>(false);
+    const [documentTypesSelected, setDocumentTypesSelected] = useState([]);
+    const [teamsSelected, setTeamsSelected] = useState([]);
 
     const lastQuestionRef = useRef<string>("");
     const chatMessageStreamEnd = useRef<HTMLDivElement | null>(null);
@@ -36,7 +70,6 @@ const Chat = () => {
 
     const makeApiRequest = async (question: string) => {
         lastQuestionRef.current = question;
-
         error && setError(undefined);
         setIsLoading(true);
         setActiveCitation(undefined);
@@ -53,7 +86,9 @@ const Chat = () => {
                     top: retrieveCount,
                     semanticRanker: useSemanticRanker,
                     semanticCaptions: useSemanticCaptions,
-                    suggestFollowupQuestions: useSuggestFollowupQuestions
+                    suggestFollowupQuestions: useSuggestFollowupQuestions,
+                    documentTypeFilters: documentTypesSelected.map((item: DocumentType) => item.value),
+                    teamFilters: teamsSelected.map((item: TeamOptionsType) => item.value)
                 }
             };
             const result = await chatApi(request);
@@ -71,6 +106,8 @@ const Chat = () => {
         setActiveCitation(undefined);
         setActiveAnalysisPanelTab(undefined);
         setAnswers([]);
+        setDocumentTypesSelected([]);
+        setTeamsSelected([]);
     };
 
     useEffect(() => chatMessageStreamEnd.current?.scrollIntoView({ behavior: "smooth" }), [isLoading]);
@@ -91,9 +128,11 @@ const Chat = () => {
         setUseSemanticCaptions(!!checked);
     };
 
+    /*
     const onExcludeCategoryChanged = (_ev?: React.FormEvent, newValue?: string) => {
         setExcludeCategory(newValue || "");
     };
+    */
 
     const onUseSuggestFollowupQuestionsChange = (_ev?: React.FormEvent<HTMLElement | HTMLInputElement>, checked?: boolean) => {
         setUseSuggestFollowupQuestions(!!checked);
@@ -232,7 +271,15 @@ const Chat = () => {
                         defaultValue={retrieveCount.toString()}
                         onChange={onRetrieveCountChange}
                     />
-                    <TextField className={styles.chatSettingsSeparator} label="Exclude category" onChange={onExcludeCategoryChanged} />
+                    <h4>Select Document Types to Search </h4>
+                    <MultiSelect
+                        options={documentTypeOptions}
+                        value={documentTypesSelected}
+                        onChange={setDocumentTypesSelected}
+                        labelledBy="Select document types"
+                    />
+                    <h4>Select Teams to Search </h4>
+                    <MultiSelect options={teamOptions} value={teamsSelected} onChange={setTeamsSelected} labelledBy="Select teams" />
                     <Checkbox
                         className={styles.chatSettingsSeparator}
                         checked={useSemanticRanker}
@@ -259,3 +306,6 @@ const Chat = () => {
 };
 
 export default Chat;
+
+// <pre>{JSON.stringify(documentTypesSelected)}</pre>
+// <TextField className={styles.chatSettingsSeparator} label="Exclude category" onChange={onExcludeCategoryChanged} />

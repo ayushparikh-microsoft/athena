@@ -137,8 +137,8 @@ const FeedbackForm: React.FC<FeedbackFormProps> = () => {
                         <option value="ACS">ACS</option>
                         <option value="Media Transport MDN">Media Transport MDN</option>
                         <option value="Media Connectivity">Media Connectivity</option>
-                        <option value="Media Connectivity">PSTN Hub</option>
-                        <option value="Media Connectivity">None</option>
+                        <option value="PSTN Hub">PSTN Hub</option>
+                        <option value="None">None</option>
                     </Form.Select>
                 </Form.Group>
                 <br />

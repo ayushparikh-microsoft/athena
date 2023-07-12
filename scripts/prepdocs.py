@@ -92,7 +92,7 @@ def upload_blobs(filename):
             blob_container.upload_blob(blob_name, f, overwrite=True)
     else:
         blob_name = blob_name_from_file_page(filename)
-        with open(filename,"rb") as data:
+        with open(filename, "rb") as data:
             blob_container.upload_blob(blob_name, data, overwrite=True)
 
 def remove_blobs(filename):
@@ -249,6 +249,7 @@ def create_sections(filename, page_map, weblink=None):
             "id": re.sub("[^0-9a-zA-Z_-]","_",f"{filename}-{i}"),
             "content": section,
             "category": category_from_filename(filename),
+            "service": "None",  # Media Connectivity
             "sourcepage": blob_name_from_file_page(filename, pagenum),
             "weblink": weblink,
             "sourcefile": filename
@@ -266,6 +267,7 @@ def create_search_index():
                 SimpleField(name="id", type="Edm.String", key=True),
                 SearchableField(name="content", type="Edm.String", analyzer_name="en.microsoft"),
                 SimpleField(name="category", type="Edm.String", filterable=True, facetable=True),
+                SimpleField(name="service", type="Edm.String", filterable=True, facetable=True),
                 SimpleField(name="weblink", type="Edm.String", filterable=True, facetable=True),
                 SimpleField(name="sourcepage", type="Edm.String", filterable=True, facetable=True),
                 SimpleField(name="sourcefile", type="Edm.String", filterable=True, facetable=True)

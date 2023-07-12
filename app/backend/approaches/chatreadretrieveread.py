@@ -52,7 +52,31 @@ Search query:
     def run(self, history: list[dict], overrides: dict) -> any:
         use_semantic_captions = True if overrides.get("semantic_captions") else False
         top = overrides.get("top") or 3
+
+        document_filters = overrides.get("document_filters") or []
+        team_filters = overrides.get("team_filters") or []
         
+        part1 = ""
+        if len(document_filters) > 0:
+            part1 = "search.in(category, " + f"'{','.join(document_filters)}', ',')"
+        
+        part2 = ""
+        if len(team_filters) > 0:
+            part2 = "(search.in(service, " + f"'{','.join(team_filters)}', ',') or service eq 'None')"      
+        
+        search_filter = None
+        if len(part1) > 0 and len(part2) > 0:
+            search_filter = part1 + " and " + part2
+        elif len(part1) > 0:
+            search_filter = part1
+        elif len(part2) > 0:
+            search_filter = part2
+        
+        if search_filter:
+            search_filter = search_filter.replace('[', '(')
+            search_filter = search_filter.replace(']', ')')
+            print(search_filter)
+
         #exclude_category = overrides.get("exclude_category") or None
         #filter = "category ne '{}'".format(exclude_category.replace("'", "''")) if exclude_category else None
         #filter = "category eq 'Feature Doc'"
@@ -71,7 +95,7 @@ Search query:
         # STEP 2: Retrieve relevant documents from the search index with the GPT optimized query
         if overrides.get("semantic_ranker"):
             r = self.search_client.search(q, 
-                                          #filter=filter,
+                                          filter=search_filter,
                                           query_type=QueryType.SEMANTIC, 
                                           query_language="en-us", 
                                           query_speller="lexicon", 

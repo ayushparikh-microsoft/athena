@@ -31,6 +31,7 @@ interface TeamOptionsType {
 }
 
 const teamOptions = [
+    { label: "No Specifc Team", value: "None" },
     { label: "Conversation", value: "Conversation" },
     { label: "Teams Scheduler", value: "Teams Scheduler" },
     { label: "Attendee", value: "Attendee" },
@@ -254,6 +255,15 @@ const Chat = () => {
                     onRenderFooterContent={() => <DefaultButton onClick={() => setIsConfigPanelOpen(false)}>Close</DefaultButton>}
                     isFooterAtBottom={true}
                 >
+                    <h4>Select Document Types to Search </h4>
+                    <MultiSelect
+                        options={documentTypeOptions}
+                        value={documentTypesSelected}
+                        onChange={setDocumentTypesSelected}
+                        labelledBy="Select document types"
+                    />
+                    <h4>Select Teams to Search </h4>
+                    <MultiSelect options={teamOptions} value={teamsSelected} onChange={setTeamsSelected} labelledBy="Select teams" />
                     <TextField
                         className={styles.chatSettingsSeparator}
                         defaultValue={promptTemplate}
@@ -271,15 +281,6 @@ const Chat = () => {
                         defaultValue={retrieveCount.toString()}
                         onChange={onRetrieveCountChange}
                     />
-                    <h4>Select Document Types to Search </h4>
-                    <MultiSelect
-                        options={documentTypeOptions}
-                        value={documentTypesSelected}
-                        onChange={setDocumentTypesSelected}
-                        labelledBy="Select document types"
-                    />
-                    <h4>Select Teams to Search </h4>
-                    <MultiSelect options={teamOptions} value={teamsSelected} onChange={setTeamsSelected} labelledBy="Select teams" />
                     <Checkbox
                         className={styles.chatSettingsSeparator}
                         checked={useSemanticRanker}

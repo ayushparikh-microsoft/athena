@@ -62,7 +62,7 @@ Search query:
         
         part2 = ""
         if len(team_filters) > 0:
-            part2 = "(search.in(service, " + f"'{','.join(team_filters)}', ',') or service eq 'None')"      
+            part2 = "search.in(service, " + f"'{','.join(team_filters)}', ',')" # or service eq 'None')"  # need ( at front if using     
         
         search_filter = None
         if len(part1) > 0 and len(part2) > 0:

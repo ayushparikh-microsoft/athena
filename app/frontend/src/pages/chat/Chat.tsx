@@ -113,9 +113,11 @@ const Chat = () => {
 
     useEffect(() => chatMessageStreamEnd.current?.scrollIntoView({ behavior: "smooth" }), [isLoading]);
 
+    /*
     const onPromptTemplateChange = (_ev?: React.FormEvent<HTMLInputElement | HTMLTextAreaElement>, newValue?: string) => {
         setPromptTemplate(newValue || "");
     };
+    */
 
     const onRetrieveCountChange = (_ev?: React.SyntheticEvent<HTMLElement, Event>, newValue?: string) => {
         setRetrieveCount(parseInt(newValue || "3"));
@@ -264,14 +266,6 @@ const Chat = () => {
                     />
                     <h4>Select Teams to Search </h4>
                     <MultiSelect options={teamOptions} value={teamsSelected} onChange={setTeamsSelected} labelledBy="Select teams" />
-                    <TextField
-                        className={styles.chatSettingsSeparator}
-                        defaultValue={promptTemplate}
-                        label="Override prompt template"
-                        multiline
-                        autoAdjustHeight
-                        onChange={onPromptTemplateChange}
-                    />
 
                     <SpinButton
                         className={styles.chatSettingsSeparator}
@@ -307,6 +301,17 @@ const Chat = () => {
 };
 
 export default Chat;
+
+/*
+<TextField
+    className={styles.chatSettingsSeparator}
+    defaultValue={promptTemplate}
+    label="Override prompt template"
+    multiline
+    autoAdjustHeight
+    onChange={onPromptTemplateChange}
+/>
+*/
 
 // <pre>{JSON.stringify(documentTypesSelected)}</pre>
 // <TextField className={styles.chatSettingsSeparator} label="Exclude category" onChange={onExcludeCategoryChanged} />

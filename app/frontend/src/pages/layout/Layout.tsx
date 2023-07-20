@@ -35,7 +35,7 @@ const Layout = () => {
                             </li>
                         </ul>
                     </nav>
-                    <h4 className={styles.headerRightText}>Chat Bot for OCEs</h4>
+                    <h4 className={styles.headerRightText}>Chat Bot for IC3 Engineers</h4>
                 </div>
             </header>
 

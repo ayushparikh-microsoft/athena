@@ -5,3 +5,4 @@ openai==0.26.4
 azure-search-documents==11.4.0b3
 azure-storage-blob==12.14.1
 azure-data-tables==12.4.2
+Office365-REST-Python-Client==2.4.2

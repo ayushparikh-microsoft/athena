@@ -71,6 +71,10 @@ def category_from_filename(filename):
     else:
         return "Feature Doc"
 
+def service_from_filename(filename):
+    splits = filename.split("-")
+    return splits[0]
+
 def upload_blobs(filename):
     blob_service = BlobServiceClient(account_url=f"https://{args.storageaccount}.blob.core.windows.net", credential=storage_creds)
     blob_container = blob_service.get_container_client(args.container)
@@ -249,7 +253,7 @@ def create_sections(filename, page_map, weblink=None):
             "id": re.sub("[^0-9a-zA-Z_-]","_",f"{filename}-{i}"),
             "content": section,
             "category": category_from_filename(filename),
-            "service": "None",  # Media Connectivity
+            "service": service_from_filename(filename),  # Media Connectivity
             "sourcepage": blob_name_from_file_page(filename, pagenum),
             "weblink": weblink,
             "sourcefile": filename
